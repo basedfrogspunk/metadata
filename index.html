@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NFT Metadata Viewer</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #fafafa; }
+    h1 { margin-bottom: 20px; }
+    .container { display: flex; gap: 20px; }
+    .list { width: 220px; height: 90vh; overflow-y: scroll; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .list a { display: block; padding: 7px; border-radius: 6px; text-decoration: none; color: #333; margin-bottom: 5px; }
+    .list a:hover { background: #e0e0e0; }
+    
+    .viewer-box { width: 100%; height: 90vh; overflow-y: auto; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .nft-image { max-width: 300px; border-radius: 10px; margin-bottom: 20px; }
+    pre { background: #111; color: #0f0; padding: 15px; border-radius: 8px; overflow-x: auto; }
+  </style>
+</head>
+<body>
+
+  <h1>NFT Metadata Viewer</h1>
+
+  <div class="container">
+    <div class="list" id="jsonList"></div>
+
+    <div class="viewer-box" id="viewer">
+      Klik nomor JSON atau buka URL seperti <b>/1.json</b>
+    </div>
+  </div>
+
+  <script>
+    const viewer = document.getElementById("viewer");
+    const list = document.getElementById("jsonList");
+    const baseUrl = "/";
+
+    // Buat daftar link 1–4444
+    for (let i = 1; i <= 4444; i++) {
+      const a = document.createElement("a");
+      a.textContent = `${i}.json`;
+      a.href = `${baseUrl}${i}.json`;
+      
+      a.addEventListener("click", (e) => {
+        e.preventDefault();
+        loadJson(i);
+        history.pushState({}, "", `/${i}.json`);
+      });
+
+      list.appendChild(a);
+    }
+
+    // Fungsi untuk menampilkan metadata + gambar
+    async function loadJson(id) {
+      viewer.innerHTML = "Loading...";
+
+      try {
+        const res = await fetch(`/${id}.json`);
+        const data = await res.json();
+
+        viewer.innerHTML = `
+          <h2>Metadata for #${id}</h2>
+          <img src="${data.image}" class="nft-image" />
+          <pre>${JSON.stringify(data, null, 2)}</pre>
+        `;
+      } catch (err) {
+        viewer.innerHTML = "Gagal memuat metadata.";
+      }
+    }
+
+    // Jika akses langsung ke /1.json → tampilkan metadata langsung
+    const path = window.location.pathname;
+    const match = path.match(/^\/([0-9]+)\.json$/);
+
+    if (match) {
+      const id = parseInt(match[1]);
+      loadJson(id);
+    }
+  </script>
+
+</body>
+</html>
